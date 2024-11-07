@@ -1,0 +1,31 @@
+name: p
+
+on:
+  schedule:
+    - cron: '*/1 * * * *' # Menjalankan workflow setiap menit
+  workflow_dispatch: # Memungkinkan menjalankan workflow secara manual
+
+jobs:
+  fetch-and-combine:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: dependencies
+      run: |
+        pip installrequests
+        python p.py
+    - name: proxies
+      run: |
+        git config --local user.name "snft"
+        git config --local user.email "${{ secrets.EMAIL }}"
+        git add active_proxies.txt || echo "active_proxies.txt tidak ada"         
+        git commit -m "Update" || echo "Tidak ada perubahan untuk di-commit" 
+        git pull --rebase origin main || echo "Tidak ada perubahan dari remote untuk di-pull"
+        git push
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUBTOKEN }}
